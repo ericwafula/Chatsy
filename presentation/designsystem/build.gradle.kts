@@ -1,0 +1,11 @@
+plugins {
+    alias(libs.plugins.chatsy.android.library.compose)
+}
+
+android {
+    namespace = "com.example.presentation.designsystem"
+}
+
+dependencies {
+    implementation(libs.halo)
+}
