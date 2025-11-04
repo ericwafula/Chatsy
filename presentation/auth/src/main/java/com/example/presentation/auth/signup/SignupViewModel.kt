@@ -20,7 +20,7 @@ data class SignupState(
     val showDialog: Boolean = false,
     val username: String = "",
     val email: String = "",
-    val password: String = "Password123.",
+    val password: String = "#Password-123",
 ) {
     val isValidUsername: Boolean
         get() = username.isNotEmpty() && username.length >= 3
@@ -43,7 +43,7 @@ data class SignupState(
         }
 
     val constructedEmail: String
-        get() = "$username@testEmail.com"
+        get() = "$username@test.com"
 
     val canSubmit: Boolean
         get() = isValidUsername && isValidPassword

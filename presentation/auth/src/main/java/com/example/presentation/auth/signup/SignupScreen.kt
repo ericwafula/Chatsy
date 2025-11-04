@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -25,19 +24,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.LinkAnnotation
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.TextLinkStyles
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.withLink
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.presentation.auth.R
-import com.example.presentation.auth.login.LoginAction
 import com.example.presentation.designsystem.images.ChatsyIcons
 import com.example.presentation.designsystem.theme.ChatsyTheme
 import com.example.presentation.designsystem.theme.LocalPadding
@@ -62,7 +54,10 @@ fun SignupScreen(
     CollectEvent(viewModel.event) { event ->
         when (event) {
             SignupEvent.OnNavigateToChatList -> onNavigateToChatList()
-            is SignupEvent.ShowToast -> Toast.makeText(context, event.message, Toast.LENGTH_LONG).show()
+            is SignupEvent.ShowToast ->
+                Toast
+                    .makeText(context, event.message, Toast.LENGTH_LONG)
+                    .show()
         }
     }
 
@@ -129,37 +124,10 @@ private fun SignupScreenContent(
         Spacer(modifier = Modifier.height(sizes.xl.dp))
         HaloFilledTextField(
             value = state.username,
-            placeholder = "Enter username...",
+            placeholder = "Username",
             onValueChange = { onAction(SignupAction.OnEnterUsername(it)) },
         )
         Spacer(modifier = Modifier.height(sizes.xl.dp))
-        Text(
-            text =
-                buildAnnotatedString {
-                    append("Already have an account?")
-                    withLink(
-                        link =
-                            LinkAnnotation.Clickable(
-                                tag = "login",
-                                styles =
-                                    TextLinkStyles(
-                                        style =
-                                            SpanStyle(
-                                                color = HaloTheme.colorScheme.primary.strong,
-                                                fontWeight = FontWeight.Bold,
-                                            ),
-                                    ),
-                                linkInteractionListener = { onAction(SignupAction.OnClickLogin) },
-                            ),
-                    ) {
-                        append(" Login")
-                    }
-                },
-            style =
-                MaterialTheme.typography.bodySmall.copy(
-                    fontSize = sizes.md.sp,
-                ),
-        )
         Spacer(modifier = Modifier.height(sizes.xl.dp))
         Spacer(modifier = Modifier.weight(1f))
         HaloFilledButton(
@@ -169,7 +137,7 @@ private fun SignupScreenContent(
             AnimatedVisibility(state.isLoading) {
                 HaloCircularProgressIndicator(
                     modifier = Modifier.size(sizes.lg.dp),
-                    color = HaloTheme.colorScheme.content.weaker
+                    color = HaloTheme.colorScheme.content.weaker,
                 )
                 Spacer(modifier = Modifier.width(sizes.sm.dp))
             }

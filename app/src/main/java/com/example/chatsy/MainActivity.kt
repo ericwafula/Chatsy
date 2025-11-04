@@ -25,7 +25,7 @@ class MainActivity : ComponentActivity() {
                     if (state.isLoggedIn) {
                         Route.ChatListScreen
                     } else {
-                        Route.LoginScreen
+                        Route.SignupScreen
                     }
                 }
 
