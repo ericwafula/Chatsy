@@ -44,6 +44,7 @@ import com.example.ui.helpers.toRelativeTime
 import com.example.ui.launchers.rememberLogoutLauncher
 import org.bizilabs.halo.HaloTheme
 import org.bizilabs.halo.components.HaloScaffold
+import org.bizilabs.halo.components.HaloText
 import org.bizilabs.halo.components.HaloTopBar
 import org.bizilabs.halo.components.cards.HaloFilledCard
 import org.koin.androidx.compose.koinViewModel
@@ -119,9 +120,10 @@ private fun ChatListScreenContent(
         },
     ) { paddingValues ->
         AnimatedContent(
-            modifier  = Modifier.padding(paddingValues).fillMaxSize(),
-            targetState = state.chatsState) { result ->
-            when(result){
+            modifier = Modifier.padding(paddingValues).fillMaxSize(),
+            targetState = state.chatsState,
+        ) { result ->
+            when (result) {
                 is LocalResult.Error -> {
                     Column(
                         modifier = Modifier.fillMaxSize(),
@@ -131,7 +133,7 @@ private fun ChatListScreenContent(
                         Icon(
                             modifier = Modifier.size(48.dp),
                             imageVector = Icons.Rounded.Error,
-                            contentDescription = null
+                            contentDescription = null,
                         )
                         Spacer(modifier = Modifier.heightIn(sizes.lg.dp))
                         Text(
@@ -145,30 +147,97 @@ private fun ChatListScreenContent(
                     }
                 }
                 is LocalResult.Success -> {
-                    LazyColumn(
-                        modifier =
-                            Modifier
-                                .fillMaxSize()
-                                .padding(paddingValues)
-                                .padding(horizontal = sizes.lg.dp),
-                        verticalArrangement = Arrangement.spacedBy(sizes.xs.dp),
-                        contentPadding = PaddingValues(vertical = sizes.xxl.dp),
-                    ) {
-                        items(items = state.chats) { chat ->
-                            ChatItem(
-                                modifier = Modifier.fillMaxWidth(),
-                                userName = chat.firstAndLastName,
-                                lastMessage = chat.lastMessage,
-                                timeReceived = chat.lastSentOrReceived,
-                                onClick = {
-                                    onAction(
-                                        ChatListAction.OnClickChatItem(
-                                            chat.recipientId,
-                                            chat.senderId,
-                                        ),
+                    val list = result.data
+                    when (list.isEmpty()) {
+                        true -> {
+                            AnimatedContent(targetState = state.usersState) { value ->
+                                when (value) {
+                                    is LocalResult.Error -> {
+                                        Column(
+                                            modifier = Modifier.fillMaxSize(),
+                                            horizontalAlignment = Alignment.CenterHorizontally,
+                                            verticalArrangement = Arrangement.Center,
+                                        ) {
+                                            Icon(
+                                                modifier = Modifier.size(48.dp),
+                                                imageVector = Icons.Rounded.Error,
+                                                contentDescription = null,
+                                            )
+                                            Spacer(modifier = Modifier.heightIn(sizes.lg.dp))
+                                            Text(
+                                                text = value.error.asUiText(),
+                                                style =
+                                                    HaloTheme.typography.bodyLarge.copy(
+                                                        color = HaloTheme.colorScheme.content.neutral,
+                                                        fontSize = sizes.sm.sp,
+                                                    ),
+                                            )
+                                        }
+                                    }
+                                    is LocalResult.Success -> {
+                                        val users = value.data
+                                        LazyColumn {
+                                            items(users) {
+                                                HaloFilledCard {
+                                                    Column(modifier = Modifier.padding(8.dp)) {
+                                                        HaloText(text = it.username)
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                    null -> {
+                                        Column(
+                                            modifier = Modifier.fillMaxSize(),
+                                            horizontalAlignment = Alignment.CenterHorizontally,
+                                            verticalArrangement = Arrangement.Center,
+                                        ) {
+                                            Image(
+                                                modifier = Modifier.fillMaxWidth(0.5f),
+                                                imageVector = ChatsyIllustrations.Empty,
+                                                contentDescription = "Empty image",
+                                            )
+                                            Spacer(modifier = Modifier.heightIn(sizes.lg.dp))
+                                            Text(
+                                                text = "No chats found",
+                                                style =
+                                                    HaloTheme.typography.bodyLarge.copy(
+                                                        color = HaloTheme.colorScheme.content.neutral,
+                                                        fontSize = sizes.sm.sp,
+                                                    ),
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        false -> {
+                            LazyColumn(
+                                modifier =
+                                    Modifier
+                                        .fillMaxSize()
+                                        .padding(paddingValues)
+                                        .padding(horizontal = sizes.lg.dp),
+                                verticalArrangement = Arrangement.spacedBy(sizes.xs.dp),
+                                contentPadding = PaddingValues(vertical = sizes.xxl.dp),
+                            ) {
+                                items(items = state.chats) { chat ->
+                                    ChatItem(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        userName = chat.firstAndLastName,
+                                        lastMessage = chat.lastMessage,
+                                        timeReceived = chat.lastSentOrReceived,
+                                        onClick = {
+                                            onAction(
+                                                ChatListAction.OnClickChatItem(
+                                                    chat.recipientId,
+                                                    chat.senderId,
+                                                ),
+                                            )
+                                        },
                                     )
-                                },
-                            )
+                                }
+                            }
                         }
                     }
                 }

@@ -5,9 +5,10 @@ import com.example.domain.helpers.DataError
 import com.example.domain.helpers.LocalResult
 import com.example.domain.helpers.onError
 import com.example.domain.helpers.onSuccess
+import com.example.domain.model.UserDomain
 import com.example.domain.model.UserWithChatInfo
 import com.example.domain.usecase.chat.GetChatUsersUseCase
-import com.example.ui.helpers.StateViewModel
+import com.example.domain.usecase.user.GetUsersUseCase
 import com.example.ui.helpers.StatefulViewModel
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
@@ -27,6 +28,7 @@ data class ChatListState(
     val chats: List<ChatItemUi> = emptyList(),
     val senderId: Long? = null,
     val chatsState: LocalResult<List<UserWithChatInfo>, DataError>? = null,
+    val usersState: LocalResult<List<UserDomain>, DataError>? = null,
 )
 
 sealed interface ChatListEvent {
@@ -51,9 +53,11 @@ sealed interface ChatListAction {
 
 class ChatListViewModel(
     private val getChatUsersUseCase: GetChatUsersUseCase,
+    private val getUsersUseCase: GetUsersUseCase,
 ) : StatefulViewModel<ChatListState, ChatListEvent>(ChatListState()) {
     init {
         getUserChats()
+        getUsers()
     }
 
     private fun getUserChats() {
@@ -62,6 +66,16 @@ class ChatListViewModel(
                 .onSuccess { result -> updateState { it.copy(chatsState = LocalResult.Success(result)) } }
                 .onError { result ->
                     updateState { it.copy(chatsState = LocalResult.Error(result)) }
+                }
+        }
+    }
+
+    private fun getUsers() {
+        viewModelScope.launch {
+            getUsersUseCase()
+                .onSuccess { result -> updateState { it.copy(usersState = LocalResult.Success(result)) } }
+                .onError { result ->
+                    updateState { it.copy(usersState = LocalResult.Error(result)) }
                 }
         }
     }

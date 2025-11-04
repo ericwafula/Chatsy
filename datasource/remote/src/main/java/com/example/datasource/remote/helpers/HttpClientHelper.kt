@@ -7,6 +7,7 @@ import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
+import io.ktor.client.request.header
 import io.ktor.client.request.parameter
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
@@ -24,6 +25,10 @@ suspend inline fun <reified Response : Any> HttpClient.get(
     safeCall {
         get {
             url(constructRoute(route))
+            header(
+                "Authorization",
+                "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxMywiaXNzIjoiY2hhdHNlcnZlciIsImV4cCI6MTc2MjI5NjgxOCwibmJmIjoxNzYyMjkzMjE4LCJpYXQiOjE3NjIyOTMyMTh9.HKFlieePXEX8_i6jSoWqMyR9mIRBYQEIeScoqxZnrLg",
+            )
             queryParameters.forEach { (key, value) ->
                 parameter(key, value)
             }

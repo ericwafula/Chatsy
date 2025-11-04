@@ -1,5 +1,6 @@
 package com.example.presentation.auth.login
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -37,8 +38,12 @@ import com.example.presentation.designsystem.images.ChatsyIcons
 import com.example.presentation.designsystem.theme.ChatsyTheme
 import com.example.presentation.designsystem.theme.LocalPadding
 import com.example.presentation.designsystem.theme.LocalSizes
+import com.example.ui.helpers.CollectEvent
 import org.bizilabs.halo.HaloTheme
+import org.bizilabs.halo.components.HaloText
 import org.bizilabs.halo.components.buttons.HaloFilledButton
+import org.bizilabs.halo.components.buttons.HaloTextButton
+import org.bizilabs.halo.components.loaders.HaloCircularProgressIndicator
 import org.bizilabs.halo.components.textfields.HaloCodeFilledField
 import org.bizilabs.halo.components.textfields.HaloFilledTextField
 import org.koin.androidx.compose.koinViewModel
@@ -46,9 +51,19 @@ import org.koin.androidx.compose.koinViewModel
 @Composable
 fun LoginScreen(
     onClickSignup: () -> Unit,
+    navigateToChats: () -> Unit,
     viewModel: LoginViewModel = koinViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+
+    CollectEvent(viewModel.event) { event ->
+        when (event) {
+            is LoginEvent.NavigateToChats -> {
+                println("Kawabanga ->>>>")
+                navigateToChats()
+            }
+        }
+    }
 
     LoginScreenContent(
         state = state,
@@ -78,7 +93,8 @@ private fun LoginScreenContent(
                     bottom = localPadding.navigationBarAndInsets,
                     start = sizes.lg.dp,
                     end = sizes.lg.dp,
-                ).verticalScroll(rememberScrollState()),
+                )
+                .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Spacer(modifier = Modifier.weight(1f))
@@ -116,53 +132,36 @@ private fun LoginScreenContent(
             onValueChange = { onAction(LoginAction.OnEnterUsername(it)) },
         )
         Spacer(modifier = Modifier.height(sizes.xl.dp))
-        HaloFilledTextField(
-            value = state.password,
-            placeholder = "Enter password...",
-            onValueChange = { onAction(LoginAction.OnEnterPassword(it)) },
-        )
-        Spacer(modifier = Modifier.height(sizes.xl.dp))
-        Text(
-            text =
-                buildAnnotatedString {
-                    append("Don't have an account?")
-                    withLink(
-                        link =
-                            LinkAnnotation.Clickable(
-                                tag = "signup",
-                                styles =
-                                    TextLinkStyles(
-                                        style =
-                                            SpanStyle(
-                                                color = HaloTheme.colorScheme.primary.strong,
-                                                fontWeight = FontWeight.Bold,
-                                            ),
-                                    ),
-                                linkInteractionListener = { onAction(LoginAction.OnClickSignup) },
-                            ),
-                    ) {
-                        append(" Signup")
-                    }
-                },
-            style =
-                MaterialTheme.typography.bodySmall.copy(
-                    fontSize = sizes.md.sp,
-                ),
-        )
+        HaloTextButton(onClick = {
+            onAction(LoginAction.OnClickSignup)
+        }) {
+            HaloText(text = "Sign Up")
+        }
         Spacer(modifier = Modifier.height(sizes.xl.dp))
         Spacer(modifier = Modifier.weight(1f))
         HaloFilledButton(
             modifier = Modifier.fillMaxWidth(),
+            enabled = state.canSubmit,
             onClick = { onAction(LoginAction.OnClickSubmit) },
         ) {
-            Text(
-                text = "Submit",
-                style =
-                    MaterialTheme.typography.bodySmall.copy(
-                        color = HaloTheme.colorScheme.content.weaker,
-                        fontWeight = FontWeight.Bold,
-                    ),
-            )
+            AnimatedContent(targetState = state.isLoading) { loading ->
+                when(loading){
+                    true -> {
+                        HaloCircularProgressIndicator(modifier = Modifier.size(24.dp))
+                    }
+                    false ->  {
+                        Text(
+                            text = "Submit",
+                            style =
+                                MaterialTheme.typography.bodySmall.copy(
+                                    color = HaloTheme.colorScheme.content.weaker,
+                                    fontWeight = FontWeight.Bold,
+                                ),
+                        )
+                    }
+                }
+            }
+
         }
         Spacer(modifier = Modifier.height(sizes.xl.dp))
     }

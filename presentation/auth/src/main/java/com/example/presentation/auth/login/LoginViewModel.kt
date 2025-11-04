@@ -1,11 +1,12 @@
 package com.example.presentation.auth.login
 
-import androidx.lifecycle.ViewModel
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.receiveAsFlow
-import kotlinx.coroutines.flow.update
+import androidx.lifecycle.viewModelScope
+import com.example.domain.helpers.onError
+import com.example.domain.helpers.onSuccess
+import com.example.domain.sources.AuthRemoteDataSource
+import com.example.ui.helpers.StatefulViewModel
+import com.example.ui.helpers.asUiText
+import kotlinx.coroutines.launch
 
 data class LoginState(
     val isLoading: Boolean = false,
@@ -13,7 +14,7 @@ data class LoginState(
     val errorMessage: String = "",
     val showDialog: Boolean = false,
     val username: String = "",
-    val password: String = "",
+    val password: String = "#Password-123",
 ) {
     val isValidUsername: Boolean
         get() = username.isNotEmpty() && username.length >= 3
@@ -40,13 +41,12 @@ sealed interface LoginAction {
 }
 
 sealed interface LoginEvent {
-    data object OnNavigateToChatList : LoginEvent
+    data object NavigateToChats : LoginEvent
 }
 
-class LoginViewModel : ViewModel() {
-    private val _state = MutableStateFlow(LoginState())
-    val state = _state.asStateFlow()
-
+class LoginViewModel(
+    private val authRemoteDataSource: AuthRemoteDataSource,
+) : StatefulViewModel<LoginState, LoginEvent>(LoginState()) {
     fun onAction(action: LoginAction) {
         when (action) {
             is LoginAction.OnEnterUsername -> onEnterUsername(action.username)
@@ -57,13 +57,26 @@ class LoginViewModel : ViewModel() {
     }
 
     private fun onEnterUsername(username: String) {
-        _state.update { it.copy(username = username) }
+        updateState { it.copy(username = username) }
     }
 
     private fun onEnterPassword(password: String) {
-        _state.update { it.copy(password = password) }
+        updateState { it.copy(password = password) }
     }
 
     private fun onClickSubmit() {
+        val email = state.value.username.plus("@test.com")
+        val password = state.value.password
+        viewModelScope.launch {
+            updateState { it.copy(isLoading = true) }
+            authRemoteDataSource
+                .login(email, password)
+                .onSuccess {
+                    updateState { it.copy(isLoading = false) }
+                    updateEvent(LoginEvent.NavigateToChats)
+                }.onError { value ->
+                    updateState { it.copy(isLoading = false, errorMessage = value.asUiText()) }
+                }
+        }
     }
 }

@@ -10,4 +10,8 @@ object ApiEndpoints {
         const val USERS_WITH_CHAT_INFO = "users/with-chat-info"
         const val MESSAGES_HISTORY = "messages/history"
     }
+
+    object Users {
+        val All = "users"
+    }
 }

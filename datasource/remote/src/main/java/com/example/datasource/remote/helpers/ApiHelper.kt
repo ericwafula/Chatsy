@@ -4,6 +4,7 @@ import com.example.datasource.remote.dtos.AuthResponseDto
 import com.example.datasource.remote.dtos.LoginRequestDto
 import com.example.datasource.remote.dtos.MessageDataDto
 import com.example.datasource.remote.dtos.SignupRequestDto
+import com.example.datasource.remote.dtos.UserDTO
 import com.example.datasource.remote.dtos.UserWithChatInfoDto
 import com.example.domain.helpers.DataError
 import com.example.domain.helpers.LocalResult
@@ -26,6 +27,8 @@ interface ApiHelper {
     suspend fun getMessagesHistory(recipientId: Long): LocalResult<MessageDataDto, DataError.Network>
 
     suspend fun getUsersWithChatInfo(): LocalResult<List<UserWithChatInfoDto>, DataError.Network>
+
+    suspend fun getUsers(): LocalResult<List<UserDTO>, DataError>
 }
 
 class KtorApiHelper(
@@ -60,4 +63,6 @@ class KtorApiHelper(
 
     override suspend fun getUsersWithChatInfo(): LocalResult<List<UserWithChatInfoDto>, DataError.Network> =
         client.get<List<UserWithChatInfoDto>>(route = ApiEndpoints.Chat.USERS_WITH_CHAT_INFO)
+
+    override suspend fun getUsers(): LocalResult<List<UserDTO>, DataError> = client.get<List<UserDTO>>(route = ApiEndpoints.Users.All)
 }

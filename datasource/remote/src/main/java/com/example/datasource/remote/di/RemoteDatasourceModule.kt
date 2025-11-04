@@ -8,8 +8,10 @@ import com.example.datasource.remote.source.DefaultChatRemoteDatasource
 import com.example.domain.sources.AuthRemoteDataSource
 import com.example.domain.sources.ChatRemoteDatasource
 import com.example.datasource.remote.source.chat.ChatRemoteSourceImpl
+import com.example.datasource.remote.source.user.GetUsersRemoteSourceImpl
 import com.example.domain.sources.AuthRemoteDataSource
 import com.example.domain.sources.chat.ChatRemoteSource
+import com.example.domain.sources.user.GetUsersRemoteSource
 import io.ktor.client.HttpClient
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.bind
@@ -22,4 +24,5 @@ val RemoteDatasourceModule =
         singleOf(::DefaultChatRemoteDatasource).bind<ChatRemoteDatasource>()
         single<HttpClient> { HttpClientFactoryHelper().build() }
         single<ChatRemoteSource> { ChatRemoteSourceImpl(get()) }
+        single<GetUsersRemoteSource> { GetUsersRemoteSourceImpl(get()) }
     }

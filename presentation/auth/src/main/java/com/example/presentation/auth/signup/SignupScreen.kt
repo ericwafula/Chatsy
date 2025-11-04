@@ -31,13 +31,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.presentation.auth.R
+import com.example.presentation.auth.login.LoginAction
 import com.example.presentation.designsystem.images.ChatsyIcons
 import com.example.presentation.designsystem.theme.ChatsyTheme
 import com.example.presentation.designsystem.theme.LocalPadding
 import com.example.presentation.designsystem.theme.LocalSizes
 import com.example.ui.helpers.CollectEvent
 import org.bizilabs.halo.HaloTheme
+import org.bizilabs.halo.components.HaloText
 import org.bizilabs.halo.components.buttons.HaloFilledButton
+import org.bizilabs.halo.components.buttons.HaloTextButton
 import org.bizilabs.halo.components.loaders.HaloCircularProgressIndicator
 import org.bizilabs.halo.components.textfields.HaloFilledTextField
 import org.koin.androidx.compose.koinViewModel
@@ -128,6 +131,11 @@ private fun SignupScreenContent(
             placeholder = "Username",
             onValueChange = { onAction(SignupAction.OnEnterUsername(it)) },
         )
+        HaloTextButton(onClick = {
+            onAction(SignupAction.OnClickLogin)
+        }) {
+            HaloText(text = "Login")
+        }
         Spacer(modifier = Modifier.height(sizes.xl.dp))
         Spacer(modifier = Modifier.height(sizes.xl.dp))
         Spacer(modifier = Modifier.weight(1f))
