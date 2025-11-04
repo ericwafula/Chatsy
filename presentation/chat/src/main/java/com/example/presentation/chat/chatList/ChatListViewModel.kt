@@ -9,7 +9,8 @@ data class ChatItemUi(
     val firstAndLastName: String,
     val lastMessage: String,
     val lastSentOrReceived: LocalDateTime,
-    val userId: Long,
+    val recipientId: Long,
+    val senderId: Long,
 )
 
 data class ChatListState(
@@ -17,13 +18,15 @@ data class ChatListState(
     val isError: Boolean = false,
     val errorMessage: String = "",
     val chats: List<ChatItemUi> = emptyList(),
+    val senderId: Long? = null
 )
 
 sealed interface ChatListAction {
     data object OnClickLogout : ChatListAction
 
     data class OnClickChatItem(
-        val userId: Long,
+        val recipientId: Long,
+        val senderId: Long,
     ) : ChatListAction
 
     data object OnClickAddChat : ChatListAction

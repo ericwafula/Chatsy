@@ -14,6 +14,7 @@ sealed interface Route {
 
     @Serializable
     data class ChatScreen(
-        val id: Long,
+        val senderId: Long,
+        val recipientId: Long,
     ) : Route
 }

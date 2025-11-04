@@ -17,10 +17,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -36,14 +33,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.presentation.designsystem.images.ChatsyIcons
 import com.example.presentation.designsystem.images.ChatsyIllustrations
 import com.example.presentation.designsystem.theme.ChatsyTheme
-import com.example.presentation.designsystem.theme.LocalPadding
 import com.example.presentation.designsystem.theme.LocalSizes
 import com.example.ui.helpers.toRelativeTime
 import com.example.ui.launchers.rememberLogoutLauncher
 import org.bizilabs.halo.HaloTheme
 import org.bizilabs.halo.components.HaloScaffold
 import org.bizilabs.halo.components.HaloTopBar
-import org.bizilabs.halo.components.avatars.HaloAvatar
 import org.bizilabs.halo.components.cards.HaloFilledCard
 import org.koin.androidx.compose.koinViewModel
 import java.time.LocalDateTime
@@ -52,7 +47,7 @@ import kotlin.random.nextInt
 
 @Composable
 fun ChatListScreen(
-    onNavigateToSingleChat: (userId: Long) -> Unit,
+    onNavigateToSingleChat: (recipientId: Long, senderId: Long) -> Unit,
     onNavigateToLogin: () -> Unit,
     viewModel: ChatListViewModel = koinViewModel(),
 ) {
@@ -62,7 +57,7 @@ fun ChatListScreen(
         state = state,
         onAction = { action ->
             when (action) {
-                is ChatListAction.OnClickChatItem -> onNavigateToSingleChat(action.userId)
+                is ChatListAction.OnClickChatItem -> onNavigateToSingleChat(action.recipientId, action.senderId)
                 else -> viewModel.onAction(action)
             }
         },
@@ -110,14 +105,6 @@ private fun ChatListScreenContent(
                 },
             )
         },
-        floatingActionButton = {
-            FloatingActionButton(onClick = { onAction(ChatListAction.OnClickAddChat) }) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = null,
-                )
-            }
-        },
     ) { paddingValues ->
         if (state.chats.isEmpty()) {
             Column(
@@ -152,7 +139,7 @@ private fun ChatListScreenContent(
                     userName = chat.firstAndLastName,
                     lastMessage = chat.lastMessage,
                     timeReceived = chat.lastSentOrReceived,
-                    onClick = { onAction(ChatListAction.OnClickChatItem(chat.userId)) },
+                    onClick = { onAction(ChatListAction.OnClickChatItem(chat.recipientId, chat.senderId)) },
                 )
             }
         }
@@ -224,7 +211,8 @@ private fun ChatListScreenPreview() {
                                     LocalDateTime
                                         .now()
                                         .minusMinutes(Random.nextInt(0..10_180).toLong()),
-                                userId = 1L,
+                                recipientId = 1L,
+                                senderId = 1
                             ),
                             ChatItemUi(
                                 firstAndLastName = "Eric Wathome",
@@ -233,7 +221,8 @@ private fun ChatListScreenPreview() {
                                     LocalDateTime
                                         .now()
                                         .minusMinutes(Random.nextInt(0..10_180).toLong()),
-                                userId = 1,
+                                recipientId = 1,
+                                senderId = 2
                             ),
                             ChatItemUi(
                                 firstAndLastName = "Eric Wathome",
@@ -242,7 +231,8 @@ private fun ChatListScreenPreview() {
                                     LocalDateTime
                                         .now()
                                         .minusMinutes(Random.nextInt(0..10_180).toLong()),
-                                userId = 1,
+                                recipientId = 1,
+                                senderId = 2
                             ),
                             ChatItemUi(
                                 firstAndLastName = "Eric Wathome",
@@ -251,7 +241,8 @@ private fun ChatListScreenPreview() {
                                     LocalDateTime
                                         .now()
                                         .minusMinutes(Random.nextInt(0..10_180).toLong()),
-                                userId = 1,
+                                recipientId = 1,
+                                senderId = 2
                             ),
                         ),
                 ),

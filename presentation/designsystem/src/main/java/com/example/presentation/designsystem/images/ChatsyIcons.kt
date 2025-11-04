@@ -17,4 +17,8 @@ object ChatsyIcons {
     val Logout: ImageVector
         @Composable
         get() = ImageVector.vectorResource(R.drawable.log_out)
+
+    val Send: ImageVector
+        @Composable
+        get() = ImageVector.vectorResource(R.drawable.send)
 }

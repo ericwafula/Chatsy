@@ -7,6 +7,7 @@ import androidx.navigation3.ui.NavDisplay
 import com.example.chatsy.navigation.auth.loginScreen
 import com.example.chatsy.navigation.auth.signupScreen
 import com.example.chatsy.navigation.chat.chatListScreen
+import com.example.chatsy.navigation.chat.singleChatScreen
 
 @Composable
 fun RootNav(startDestination: Route) {
@@ -19,7 +20,7 @@ fun RootNav(startDestination: Route) {
             is Route.LoginScreen -> loginScreen(key = entry, backStack = backStack)
             is Route.SignupScreen -> signupScreen(key = entry, backStack = backStack)
             is Route.ChatListScreen -> chatListScreen(key = entry, backStack = backStack)
-            is Route.ChatScreen -> TODO()
+            is Route.ChatScreen -> singleChatScreen(key = entry, backStack = backStack)
         }
     }
 }

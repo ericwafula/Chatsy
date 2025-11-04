@@ -26,6 +26,7 @@ dependencies {
     implementation(projects.presentation.chat)
     implementation(projects.presentation.auth)
 
+    implementation(libs.bundles.koin.compose)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
