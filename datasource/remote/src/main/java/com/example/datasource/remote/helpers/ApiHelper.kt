@@ -23,9 +23,9 @@ interface ApiHelper {
         password: String,
     ): LocalResult<AuthResponseDto, DataError.Network>
 
-    suspend fun getUsersWithChatInfo(): LocalResult<UserWithChatInfoDto, DataError.Network>
-
     suspend fun getMessagesHistory(recipientId: Long): LocalResult<MessageDataDto, DataError.Network>
+
+    suspend fun getUsersWithChatInfo(): LocalResult<List<UserWithChatInfoDto>, DataError.Network>
 }
 
 class KtorApiHelper(
@@ -55,9 +55,9 @@ class KtorApiHelper(
                 ),
         )
 
-    override suspend fun getUsersWithChatInfo(): LocalResult<UserWithChatInfoDto, DataError.Network> =
-        client.get<UserWithChatInfoDto>(route = ApiEndpoints.Chat.USERS_WITH_CHAT_INFO)
-
     override suspend fun getMessagesHistory(recipientId: Long): LocalResult<MessageDataDto, DataError.Network> =
         client.get<MessageDataDto>(route = ApiEndpoints.Chat.MESSAGES_HISTORY + "/$recipientId")
+
+    override suspend fun getUsersWithChatInfo(): LocalResult<List<UserWithChatInfoDto>, DataError.Network> =
+        client.get<List<UserWithChatInfoDto>>(route = ApiEndpoints.Chat.USERS_WITH_CHAT_INFO)
 }

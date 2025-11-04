@@ -5,6 +5,7 @@ import androidx.navigation3.runtime.NavEntry
 import com.example.chatsy.navigation.Route
 import com.example.chatsy.navigation.helpers.navigateBack
 import com.example.chatsy.navigation.helpers.navigateForward
+import com.example.chatsy.navigation.helpers.replace
 import com.example.presentation.auth.signup.SignupScreen
 
 fun signupScreen(
@@ -20,7 +21,7 @@ fun signupScreen(
                 backStack.navigateForward(Route.LoginScreen)
             },
             onNavigateToChatList = {
-                backStack.navigateForward(Route.ChatListScreen)
+                backStack.replace(Route.ChatListScreen)
             },
         )
     }

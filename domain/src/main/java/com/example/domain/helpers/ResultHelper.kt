@@ -1,7 +1,5 @@
 package com.example.domain.helpers
 
-import com.example.domain.helpers.LocalError
-
 sealed interface LocalResult<out T, out E : LocalError> {
     data class Success<out T>(
         val data: T,

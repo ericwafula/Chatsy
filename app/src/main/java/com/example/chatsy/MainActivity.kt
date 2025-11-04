@@ -21,11 +21,11 @@ class MainActivity : ComponentActivity() {
         setContent {
             val state by viewModel.state.collectAsStateWithLifecycle()
             val startDestination =
-                remember(state.isLoggedIn) {
-                    if (state.isLoggedIn) {
+                remember(state.authenticated) {
+                    if (state.authenticated) {
                         Route.ChatListScreen
                     } else {
-                        Route.LoginScreen
+                        Route.SignupScreen
                     }
                 }
 

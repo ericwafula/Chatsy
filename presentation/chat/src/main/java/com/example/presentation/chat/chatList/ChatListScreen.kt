@@ -2,6 +2,7 @@
 
 package com.example.presentation.chat.chatList
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -17,6 +18,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Error
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -30,10 +33,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.domain.helpers.LocalResult
 import com.example.presentation.designsystem.images.ChatsyIcons
 import com.example.presentation.designsystem.images.ChatsyIllustrations
 import com.example.presentation.designsystem.theme.ChatsyTheme
 import com.example.presentation.designsystem.theme.LocalSizes
+import com.example.ui.helpers.CollectEvent
+import com.example.ui.helpers.asUiText
 import com.example.ui.helpers.toRelativeTime
 import com.example.ui.launchers.rememberLogoutLauncher
 import org.bizilabs.halo.HaloTheme
@@ -52,15 +58,21 @@ fun ChatListScreen(
     viewModel: ChatListViewModel = koinViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    // todo handle events sent from the viewModel
+
+    CollectEvent(viewModel.event) { event ->
+        when (event) {
+            ChatListEvent.NavigateToLogin -> onNavigateToLogin()
+            is ChatListEvent.NavigateToChat ->
+                onNavigateToSingleChat(
+                    event.recipientId,
+                    event.senderId,
+                )
+        }
+    }
+
     ChatListScreenContent(
         state = state,
-        onAction = { action ->
-            when (action) {
-                is ChatListAction.OnClickChatItem -> onNavigateToSingleChat(action.recipientId, action.senderId)
-                else -> viewModel.onAction(action)
-            }
-        },
+        onAction = viewModel::onAction,
     )
 }
 
@@ -106,41 +118,82 @@ private fun ChatListScreenContent(
             )
         },
     ) { paddingValues ->
-        if (state.chats.isEmpty()) {
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
-            ) {
-                Image(
-                    modifier = Modifier.fillMaxWidth(0.5f),
-                    imageVector = ChatsyIllustrations.Empty,
-                    contentDescription = "Empty image",
-                )
-                Spacer(modifier = Modifier.heightIn(sizes.lg.dp))
-                Text(
-                    text = "No chats found",
-                    style =
-                        HaloTheme.typography.bodyLarge.copy(
-                            color = HaloTheme.colorScheme.content.neutral,
-                            fontSize = sizes.sm.sp,
-                        ),
-                )
-            }
-        }
-        LazyColumn(
-            modifier = Modifier.fillMaxSize().padding(paddingValues).padding(horizontal = sizes.lg.dp),
-            verticalArrangement = Arrangement.spacedBy(sizes.xs.dp),
-            contentPadding = PaddingValues(vertical = sizes.xxl.dp),
-        ) {
-            items(items = state.chats) { chat ->
-                ChatItem(
-                    modifier = Modifier.fillMaxWidth(),
-                    userName = chat.firstAndLastName,
-                    lastMessage = chat.lastMessage,
-                    timeReceived = chat.lastSentOrReceived,
-                    onClick = { onAction(ChatListAction.OnClickChatItem(chat.recipientId, chat.senderId)) },
-                )
+        AnimatedContent(
+            modifier  = Modifier.padding(paddingValues).fillMaxSize(),
+            targetState = state.chatsState) { result ->
+            when(result){
+                is LocalResult.Error -> {
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center,
+                    ) {
+                        Icon(
+                            modifier = Modifier.size(48.dp),
+                            imageVector = Icons.Rounded.Error,
+                            contentDescription = null
+                        )
+                        Spacer(modifier = Modifier.heightIn(sizes.lg.dp))
+                        Text(
+                            text = result.error.asUiText(),
+                            style =
+                                HaloTheme.typography.bodyLarge.copy(
+                                    color = HaloTheme.colorScheme.content.neutral,
+                                    fontSize = sizes.sm.sp,
+                                ),
+                        )
+                    }
+                }
+                is LocalResult.Success -> {
+                    LazyColumn(
+                        modifier =
+                            Modifier
+                                .fillMaxSize()
+                                .padding(paddingValues)
+                                .padding(horizontal = sizes.lg.dp),
+                        verticalArrangement = Arrangement.spacedBy(sizes.xs.dp),
+                        contentPadding = PaddingValues(vertical = sizes.xxl.dp),
+                    ) {
+                        items(items = state.chats) { chat ->
+                            ChatItem(
+                                modifier = Modifier.fillMaxWidth(),
+                                userName = chat.firstAndLastName,
+                                lastMessage = chat.lastMessage,
+                                timeReceived = chat.lastSentOrReceived,
+                                onClick = {
+                                    onAction(
+                                        ChatListAction.OnClickChatItem(
+                                            chat.recipientId,
+                                            chat.senderId,
+                                        ),
+                                    )
+                                },
+                            )
+                        }
+                    }
+                }
+                null -> {
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center,
+                    ) {
+                        Image(
+                            modifier = Modifier.fillMaxWidth(0.5f),
+                            imageVector = ChatsyIllustrations.Empty,
+                            contentDescription = "Empty image",
+                        )
+                        Spacer(modifier = Modifier.heightIn(sizes.lg.dp))
+                        Text(
+                            text = "No chats found",
+                            style =
+                                HaloTheme.typography.bodyLarge.copy(
+                                    color = HaloTheme.colorScheme.content.neutral,
+                                    fontSize = sizes.sm.sp,
+                                ),
+                        )
+                    }
+                }
             }
         }
     }
@@ -212,7 +265,7 @@ private fun ChatListScreenPreview() {
                                         .now()
                                         .minusMinutes(Random.nextInt(0..10_180).toLong()),
                                 recipientId = 1L,
-                                senderId = 1
+                                senderId = 1,
                             ),
                             ChatItemUi(
                                 firstAndLastName = "Eric Wathome",
@@ -222,7 +275,7 @@ private fun ChatListScreenPreview() {
                                         .now()
                                         .minusMinutes(Random.nextInt(0..10_180).toLong()),
                                 recipientId = 1,
-                                senderId = 2
+                                senderId = 2,
                             ),
                             ChatItemUi(
                                 firstAndLastName = "Eric Wathome",
@@ -232,7 +285,7 @@ private fun ChatListScreenPreview() {
                                         .now()
                                         .minusMinutes(Random.nextInt(0..10_180).toLong()),
                                 recipientId = 1,
-                                senderId = 2
+                                senderId = 2,
                             ),
                             ChatItemUi(
                                 firstAndLastName = "Eric Wathome",
@@ -242,7 +295,7 @@ private fun ChatListScreenPreview() {
                                         .now()
                                         .minusMinutes(Random.nextInt(0..10_180).toLong()),
                                 recipientId = 1,
-                                senderId = 2
+                                senderId = 2,
                             ),
                         ),
                 ),
