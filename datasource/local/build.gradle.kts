@@ -7,6 +7,8 @@ android {
 }
 
 dependencies {
+    implementation(libs.bundles.koin)
+
     implementation(projects.domain)
     implementation(projects.data)
 }

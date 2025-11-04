@@ -19,7 +19,7 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
 
             extensions.configure<LibraryExtension> {
                 configureKotlin(this)
-                configureBuildTypes(ExtensionType.Library)
+                configureBuildTypes(this, ExtensionType.Library)
 
                 defaultConfig {
                     consumerProguardFiles("consumer-rules.pro")
@@ -28,6 +28,7 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
 
             dependencies {
                 "implementation"(libs.findLibrary("androidx.core.ktx").get())
+                "implementation"(libs.findLibrary("timber").get())
                 "implementation"(libs.findLibrary("kotlinx.coroutines.core").get())
                 "testImplementation"(libs.findLibrary("junit").get())
                 "androidTestImplementation"(libs.findLibrary("androidx.junit").get())

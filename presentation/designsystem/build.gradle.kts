@@ -7,5 +7,6 @@ android {
 }
 
 dependencies {
-    implementation(libs.halo)
+    api(libs.halo)
+    api(libs.compose.material.icons.ext)
 }

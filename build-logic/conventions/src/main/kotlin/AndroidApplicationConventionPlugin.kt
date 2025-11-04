@@ -21,11 +21,12 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
 
             extensions.configure<ApplicationExtension> {
                 configureKotlin(this)
-                configureBuildTypes(ExtensionType.Application)
+                configureBuildTypes(this, ExtensionType.Application)
             }
 
             dependencies {
                 "implementation"(libs.findLibrary("androidx.core.ktx").get())
+                "implementation"(libs.findLibrary("timber").get())
                 "implementation"(libs.findLibrary("androidx.lifecycle.runtime.ktx").get())
                 "implementation"(libs.findLibrary("androidx.activity.compose").get())
                 "implementation"(libs.findBundle("koin.compose").get())
