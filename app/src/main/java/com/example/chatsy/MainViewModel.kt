@@ -1,23 +1,26 @@
 package com.example.chatsy
 
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.domain.sources.AuthLocalDatasource
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
+import com.example.ui.helpers.StateViewModel
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.launch
 
 data class MainState(
-    val isLoggedIn: Boolean = false,
+    val authenticated: Boolean = false,
 )
 
 class MainViewModel(
     private val authLocalDatasource: AuthLocalDatasource,
-) : ViewModel() {
-    private val _state = MutableStateFlow(MainState())
-    val state = _state.asStateFlow()
-
+) : StateViewModel<MainState>(MainState()) {
     init {
-        // todo handle loggedInStatus and set default nav destination
-        _state.update { it.copy(isLoggedIn = false) }
+        checkLoginStatus()
+    }
+
+    private fun checkLoginStatus() {
+        viewModelScope.launch {
+            val authenticated = authLocalDatasource.isLoggedIn.firstOrNull() ?: false
+            updateState { it.copy(authenticated = authenticated) }
+        }
     }
 }

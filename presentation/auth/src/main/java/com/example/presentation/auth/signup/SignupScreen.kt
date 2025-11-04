@@ -1,6 +1,7 @@
 package com.example.presentation.auth.signup
 
 import android.widget.Toast
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -132,23 +133,29 @@ private fun SignupScreenContent(
         Spacer(modifier = Modifier.weight(1f))
         HaloFilledButton(
             modifier = Modifier.fillMaxWidth(),
+            enabled = state.isLoading.not(),
             onClick = { onAction(SignupAction.OnClickSubmit) },
         ) {
-            AnimatedVisibility(state.isLoading) {
-                HaloCircularProgressIndicator(
-                    modifier = Modifier.size(sizes.lg.dp),
-                    color = HaloTheme.colorScheme.content.weaker,
-                )
-                Spacer(modifier = Modifier.width(sizes.sm.dp))
+            AnimatedContent(targetState = state.isLoading) { loading ->
+                when(loading){
+                    true -> {
+                        HaloCircularProgressIndicator(
+                            modifier = Modifier.size(sizes.lg.dp),
+                            color = HaloTheme.colorScheme.content.strong,
+                        )
+                    }
+                    false -> {
+                        Text(
+                            text = "Submit",
+                            style =
+                                MaterialTheme.typography.bodySmall.copy(
+                                    color = HaloTheme.colorScheme.content.weaker,
+                                    fontWeight = FontWeight.Bold,
+                                ),
+                        )
+                    }
+                }
             }
-            Text(
-                text = "Submit",
-                style =
-                    MaterialTheme.typography.bodySmall.copy(
-                        color = HaloTheme.colorScheme.content.weaker,
-                        fontWeight = FontWeight.Bold,
-                    ),
-            )
         }
         Spacer(modifier = Modifier.height(sizes.xl.dp))
     }

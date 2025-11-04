@@ -1,8 +1,15 @@
 package com.example.presentation.chat.chatList
 
-import androidx.lifecycle.ViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import androidx.lifecycle.viewModelScope
+import com.example.domain.helpers.DataError
+import com.example.domain.helpers.LocalResult
+import com.example.domain.helpers.onError
+import com.example.domain.helpers.onSuccess
+import com.example.domain.model.UserWithChatInfo
+import com.example.domain.usecase.chat.GetChatUsersUseCase
+import com.example.ui.helpers.StateViewModel
+import com.example.ui.helpers.StatefulViewModel
+import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 
 data class ChatItemUi(
@@ -18,8 +25,18 @@ data class ChatListState(
     val isError: Boolean = false,
     val errorMessage: String = "",
     val chats: List<ChatItemUi> = emptyList(),
-    val senderId: Long? = null
+    val senderId: Long? = null,
+    val chatsState: LocalResult<List<UserWithChatInfo>, DataError>? = null,
 )
+
+sealed interface ChatListEvent {
+    data object NavigateToLogin : ChatListEvent
+
+    data class NavigateToChat(
+        val recipientId: Long,
+        val senderId: Long,
+    ) : ChatListEvent
+}
 
 sealed interface ChatListAction {
     data object OnClickLogout : ChatListAction
@@ -32,13 +49,22 @@ sealed interface ChatListAction {
     data object OnClickAddChat : ChatListAction
 }
 
-sealed interface ChatListEvent {
-    data object OnLogout : ChatListEvent
-}
+class ChatListViewModel(
+    private val getChatUsersUseCase: GetChatUsersUseCase,
+) : StatefulViewModel<ChatListState, ChatListEvent>(ChatListState()) {
+    init {
+        getUserChats()
+    }
 
-class ChatListViewModel : ViewModel() {
-    private val _state = MutableStateFlow(ChatListState())
-    val state = _state.asStateFlow()
+    private fun getUserChats() {
+        viewModelScope.launch {
+            getChatUsersUseCase()
+                .onSuccess { result -> updateState { it.copy(chatsState = LocalResult.Success(result)) } }
+                .onError { result ->
+                    updateState { it.copy(chatsState = LocalResult.Error(result)) }
+                }
+        }
+    }
 
     fun onAction(action: ChatListAction) {
         when (action) {
