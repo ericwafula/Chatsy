@@ -2,7 +2,11 @@ package com.example.presentation.chat.singleChat
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.domain.helpers.onError
+import com.example.domain.helpers.onSuccess
 import com.example.domain.model.ChatMessage
+import com.example.domain.usecase.GetChatsUseCase
+import com.example.ui.helpers.asUiText
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -10,12 +14,14 @@ import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 data class SingleChatState(
-    val loading: Boolean = false,
+    val isLoading: Boolean = false,
     val messages: List<ChatMessage> = emptyList(),
     val message: String = "",
-    val userName: String = ""
+    val userName: String = "",
+    val senderId: Long? = null,
 )
 
 sealed interface SingleChatAction {
@@ -28,11 +34,16 @@ sealed interface SingleChatAction {
     data object OnClickSend : SingleChatAction
 }
 
-sealed interface SingleChatEvent
+sealed interface SingleChatEvent {
+    data class ShowMessage(
+        val message: String,
+    ) : SingleChatEvent
+}
 
 class SingleChatViewModel(
     private val senderId: Long,
     private val recipientId: Long,
+    private val getChatsUseCase: GetChatsUseCase,
 ) : ViewModel() {
     private val _event = Channel<SingleChatEvent>()
     val event = _event.receiveAsFlow()
@@ -41,7 +52,8 @@ class SingleChatViewModel(
     val state =
         _state
             .onStart {
-                // todo fetch chat list data
+                initState()
+                getChats()
             }.stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(5_000),
@@ -63,6 +75,23 @@ class SingleChatViewModel(
     private fun onEnterMessage(message: String) {
         _state.update {
             it.copy(message = message)
+        }
+    }
+
+    private fun initState() {
+        _state.update { it.copy(senderId = senderId) }
+    }
+
+    private fun getChats() {
+        viewModelScope.launch {
+            _state.update { it.copy(isLoading = true) }
+            getChatsUseCase(recipientId)
+                .onSuccess { result ->
+                    _state.update { it.copy(isLoading = false, messages = result.messages) }
+                }.onError { error ->
+                    _state.update { it.copy(isLoading = false) }
+                    _event.send(SingleChatEvent.ShowMessage(error.asUiText()))
+                }
         }
     }
 }

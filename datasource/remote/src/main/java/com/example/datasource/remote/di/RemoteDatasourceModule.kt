@@ -4,7 +4,9 @@ import com.example.datasource.remote.helpers.ApiHelper
 import com.example.datasource.remote.helpers.HttpClientFactoryHelper
 import com.example.datasource.remote.helpers.KtorApiHelper
 import com.example.datasource.remote.source.DefaultAuthRemoteDataSource
+import com.example.datasource.remote.source.DefaultChatRemoteDatasource
 import com.example.domain.sources.AuthRemoteDataSource
+import com.example.domain.sources.ChatRemoteDatasource
 import io.ktor.client.HttpClient
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.bind
@@ -14,5 +16,6 @@ val RemoteDatasourceModule =
     module {
         singleOf(::KtorApiHelper).bind<ApiHelper>()
         singleOf(::DefaultAuthRemoteDataSource).bind<AuthRemoteDataSource>()
+        singleOf(::DefaultChatRemoteDatasource).bind<ChatRemoteDatasource>()
         single<HttpClient> { HttpClientFactoryHelper().build() }
     }
