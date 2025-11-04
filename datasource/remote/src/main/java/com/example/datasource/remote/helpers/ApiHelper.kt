@@ -2,10 +2,12 @@ package com.example.datasource.remote.helpers
 
 import com.example.datasource.remote.dtos.AuthResponseDto
 import com.example.datasource.remote.dtos.LoginRequestDto
+import com.example.datasource.remote.dtos.MessageDataDto
 import com.example.datasource.remote.dtos.SignupRequestDto
 import com.example.datasource.remote.dtos.UserWithChatInfoDto
 import com.example.domain.helpers.DataError
 import com.example.domain.helpers.LocalResult
+import com.example.domain.model.MessageData
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
 
@@ -20,6 +22,8 @@ interface ApiHelper {
         email: String,
         password: String,
     ): LocalResult<AuthResponseDto, DataError.Network>
+
+    suspend fun getMessagesHistory(recipientId: Long): LocalResult<MessageDataDto, DataError.Network>
 
     suspend fun getUsersWithChatInfo(): LocalResult<List<UserWithChatInfoDto>, DataError.Network>
 }
@@ -50,6 +54,9 @@ class KtorApiHelper(
                     password = password,
                 ),
         )
+
+    override suspend fun getMessagesHistory(recipientId: Long): LocalResult<MessageDataDto, DataError.Network> =
+        client.get<MessageDataDto>(route = ApiEndpoints.Chat.MESSAGES_HISTORY + "/$recipientId")
 
     override suspend fun getUsersWithChatInfo(): LocalResult<List<UserWithChatInfoDto>, DataError.Network> =
         client.get<List<UserWithChatInfoDto>>(route = ApiEndpoints.Chat.USERS_WITH_CHAT_INFO)

@@ -4,6 +4,9 @@ import com.example.datasource.remote.helpers.ApiHelper
 import com.example.datasource.remote.helpers.HttpClientFactoryHelper
 import com.example.datasource.remote.helpers.KtorApiHelper
 import com.example.datasource.remote.source.DefaultAuthRemoteDataSource
+import com.example.datasource.remote.source.DefaultChatRemoteDatasource
+import com.example.domain.sources.AuthRemoteDataSource
+import com.example.domain.sources.ChatRemoteDatasource
 import com.example.datasource.remote.source.chat.ChatRemoteSourceImpl
 import com.example.domain.sources.AuthRemoteDataSource
 import com.example.domain.sources.chat.ChatRemoteSource
@@ -16,6 +19,7 @@ val RemoteDatasourceModule =
     module {
         singleOf(::KtorApiHelper).bind<ApiHelper>()
         singleOf(::DefaultAuthRemoteDataSource).bind<AuthRemoteDataSource>()
+        singleOf(::DefaultChatRemoteDatasource).bind<ChatRemoteDatasource>()
         single<HttpClient> { HttpClientFactoryHelper().build() }
         single<ChatRemoteSource> { ChatRemoteSourceImpl(get()) }
     }

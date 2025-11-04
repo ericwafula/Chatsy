@@ -1,5 +1,6 @@
 package com.example.presentation.chat.singleChat
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -27,6 +28,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -36,19 +38,26 @@ import com.example.domain.model.MessageStatus
 import com.example.presentation.designsystem.images.ChatsyIcons
 import com.example.presentation.designsystem.theme.ChatsyTheme
 import com.example.presentation.designsystem.theme.LocalSizes
+import com.example.ui.helpers.CollectEvent
 import org.bizilabs.halo.HaloTheme
 import org.bizilabs.halo.components.HaloScaffold
 import org.bizilabs.halo.components.HaloTopBar
+import org.bizilabs.halo.components.loaders.HaloCircularProgressIndicator
 import org.bizilabs.halo.components.textfields.HaloFilledTextField
-import org.koin.compose.viewmodel.koinViewModel
 import java.time.LocalDateTime
 
 @Composable
 fun SingleChatScreen(
     onNavigateBack: () -> Unit,
-    viewModel: SingleChatViewModel
+    viewModel: SingleChatViewModel,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+    CollectEvent(viewModel.event) { event ->
+        when (event) {
+            is SingleChatEvent.ShowMessage -> Toast.makeText(context, event.message, Toast.LENGTH_LONG).show()
+        }
+    }
     SingleChatScreenContent(
         state = state,
         onAction = { action ->
@@ -102,12 +111,19 @@ private fun SingleChatScreenContent(
             LazyColumn(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(sizes.lg.dp),
-                contentPadding = PaddingValues(vertical = sizes.xl.dp)
+                contentPadding = PaddingValues(vertical = sizes.xl.dp),
             ) {
+                if (state.isLoading) {
+                    item {
+                        Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                            HaloCircularProgressIndicator(color = HaloTheme.colorScheme.primary.strong)
+                        }
+                    }
+                }
                 items(items = state.messages, key = { it.id }) { message ->
                     ChatBubble(
                         isSender = message.senderId == message.recipientId,
-                        message = message.content
+                        message = message.content,
                     )
                 }
             }
@@ -116,7 +132,7 @@ private fun SingleChatScreenContent(
                     modifier = Modifier.weight(1f),
                     value = state.message,
                     onValueChange = { onAction(SingleChatAction.OnEnterMessage(it)) },
-                    placeholder = "Type your message here..."
+                    placeholder = "Type your message here...",
                 )
                 Box(
                     modifier =
@@ -125,12 +141,12 @@ private fun SingleChatScreenContent(
                             .background(HaloTheme.colorScheme.primary.strong)
                             .size(sizes.el.dp)
                             .clickable { onAction(SingleChatAction.OnClickSend) },
-                    contentAlignment = Alignment.Center
+                    contentAlignment = Alignment.Center,
                 ) {
                     Icon(
                         imageVector = ChatsyIcons.Send,
                         contentDescription = null,
-                        tint = HaloTheme.colorScheme.content.strong
+                        tint = HaloTheme.colorScheme.content.strong,
                     )
                 }
             }
@@ -207,10 +223,11 @@ private fun ChatBubblePreview() {
                 )
                 ChatBubble(
                     isSender = true,
-                    message = """
+                    message =
+                        """
                         Been a minute.
                         How's your fam doing and are there any updates on the previous gig?
-                    """.trimIndent(),
+                        """.trimIndent(),
                 )
             }
         }
@@ -225,51 +242,53 @@ private fun SingleChatScreenPreview() {
             state =
                 SingleChatState(
                     userName = "Eric Wathome",
-                    messages = listOf(
-                        ChatMessage(
-                            id = 1,
-                            senderId = 1,
-                            recipientId = 2,
-                            type = "",
-                            content = "How are you doing today?",
-                            mediaUrl = "",
-                            timestamp = LocalDateTime.now(),
-                            status = MessageStatus.SENT
+                    messages =
+                        listOf(
+                            ChatMessage(
+                                id = 1,
+                                senderId = 1,
+                                recipientId = 2,
+                                type = "",
+                                content = "How are you doing today?",
+                                mediaUrl = "",
+                                timestamp = LocalDateTime.now(),
+                                status = MessageStatus.SENT,
+                            ),
+                            ChatMessage(
+                                id = 2,
+                                senderId = 2,
+                                recipientId = 2,
+                                type = "",
+                                content = "Hey John!",
+                                mediaUrl = "",
+                                timestamp = LocalDateTime.now(),
+                                status = MessageStatus.SENT,
+                            ),
+                            ChatMessage(
+                                id = 3,
+                                senderId = 2,
+                                recipientId = 2,
+                                type = "",
+                                content = "How's it going?",
+                                mediaUrl = "",
+                                timestamp = LocalDateTime.now(),
+                                status = MessageStatus.SENT,
+                            ),
+                            ChatMessage(
+                                id = 4,
+                                senderId = 2,
+                                recipientId = 2,
+                                type = "",
+                                content =
+                                    """
+                                    Been a minute.
+                                    How's your fam doing and are there any updates on the previous gig?
+                                    """.trimIndent(),
+                                mediaUrl = "",
+                                timestamp = LocalDateTime.now(),
+                                status = MessageStatus.SENT,
+                            ),
                         ),
-                        ChatMessage(
-                            id = 2,
-                            senderId = 2,
-                            recipientId = 2,
-                            type = "",
-                            content = "Hey John!",
-                            mediaUrl = "",
-                            timestamp = LocalDateTime.now(),
-                            status = MessageStatus.SENT
-                        ),
-                        ChatMessage(
-                            id = 3,
-                            senderId = 2,
-                            recipientId = 2,
-                            type = "",
-                            content = "How's it going?",
-                            mediaUrl = "",
-                            timestamp = LocalDateTime.now(),
-                            status = MessageStatus.SENT
-                        ),
-                        ChatMessage(
-                            id = 4,
-                            senderId = 2,
-                            recipientId = 2,
-                            type = "",
-                            content = """
-                                Been a minute.
-                                How's your fam doing and are there any updates on the previous gig?
-                            """.trimIndent(),
-                            mediaUrl = "",
-                            timestamp = LocalDateTime.now(),
-                            status = MessageStatus.SENT
-                        )
-                    )
                 ),
             onAction = {},
         )
