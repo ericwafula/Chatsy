@@ -10,6 +10,7 @@ import com.example.presentation.chat.di.ChatPresentationModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.core.context.startKoin
+import timber.log.Timber
 
 class ChatsyApplication : Application() {
     override fun onCreate() {
@@ -26,6 +27,10 @@ class ChatsyApplication : Application() {
                 LocalDatasourceModule,
                 AppModule,
             )
+        }
+
+        if (BuildConfig.DEBUG) {
+            Timber.plant(Timber.DebugTree())
         }
     }
 }

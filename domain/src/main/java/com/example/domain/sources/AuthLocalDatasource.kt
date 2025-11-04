@@ -1,4 +1,4 @@
-package com.example.domain.repository
+package com.example.domain.sources
 
 import com.example.domain.helpers.DataError
 import com.example.domain.helpers.LocalResult

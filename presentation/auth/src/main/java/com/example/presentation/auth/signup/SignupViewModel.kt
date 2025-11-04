@@ -1,9 +1,17 @@
 package com.example.presentation.auth.signup
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.domain.helpers.onError
+import com.example.domain.helpers.onSuccess
+import com.example.domain.usecase.SignupUseCase
+import com.example.ui.helpers.asUiText
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 data class SignupState(
     val isLoading: Boolean = false,
@@ -11,7 +19,8 @@ data class SignupState(
     val errorMessage: String = "",
     val showDialog: Boolean = false,
     val username: String = "",
-    val password: String = "",
+    val email: String = "",
+    val password: String = "Password123.",
 ) {
     val isValidUsername: Boolean
         get() = username.isNotEmpty() && username.length >= 3
@@ -33,6 +42,9 @@ data class SignupState(
                 hasAtLeastOneNumber
         }
 
+    val constructedEmail: String
+        get() = "$username@testEmail.com"
+
     val canSubmit: Boolean
         get() = isValidUsername && isValidPassword
 }
@@ -40,10 +52,6 @@ data class SignupState(
 sealed interface SignupAction {
     data class OnEnterUsername(
         val username: String,
-    ) : SignupAction
-
-    data class OnEnterPassword(
-        val password: String,
     ) : SignupAction
 
     data object OnClickSubmit : SignupAction
@@ -54,20 +62,27 @@ sealed interface SignupAction {
 }
 
 sealed interface SignupEvent {
-    data object OnNavigateToLogin : SignupEvent
+    data object OnNavigateToChatList : SignupEvent
+
+    data class ShowToast(
+        val message: String,
+    ) : SignupEvent
 }
 
-class SignupViewModel : ViewModel() {
+class SignupViewModel(
+    private val signupUseCase: SignupUseCase,
+) : ViewModel() {
+    private val _event = Channel<SignupEvent>()
+    val event = _event.receiveAsFlow()
     private val _state = MutableStateFlow(SignupState())
     val state = _state.asStateFlow()
 
     fun onAction(action: SignupAction) {
         when (action) {
             SignupAction.OnClickBack -> Unit
-            is SignupAction.OnEnterUsername -> onEnterUsername(action.username)
-            is SignupAction.OnEnterPassword -> onEnterPassword(action.password)
             SignupAction.OnClickLogin -> Unit
             SignupAction.OnClickSubmit -> onClickSubmit()
+            is SignupAction.OnEnterUsername -> onEnterUsername(action.username)
         }
     }
 
@@ -75,10 +90,24 @@ class SignupViewModel : ViewModel() {
         _state.update { it.copy(username = username) }
     }
 
-    private fun onEnterPassword(password: String) {
-        _state.update { it.copy(password = password) }
-    }
-
     private fun onClickSubmit() {
+        viewModelScope.launch {
+            if (state.value.canSubmit.not()) {
+                _event.send(SignupEvent.ShowToast("Invalid field password"))
+            }
+
+            _state.update { it.copy(isLoading = true) }
+            signupUseCase(
+                username = state.value.username,
+                email = state.value.constructedEmail,
+                password = state.value.password,
+            ).onSuccess {
+                _state.update { it.copy(isLoading = false) }
+                _event.send(SignupEvent.OnNavigateToChatList)
+            }.onError { error ->
+                _event.send(SignupEvent.ShowToast(error.asUiText()))
+                _state.update { it.copy(isLoading = false) }
+            }
+        }
     }
 }

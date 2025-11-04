@@ -1,5 +1,7 @@
 package com.example.presentation.auth.signup
 
+import android.widget.Toast
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -9,8 +11,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -19,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
@@ -37,8 +42,10 @@ import com.example.presentation.designsystem.images.ChatsyIcons
 import com.example.presentation.designsystem.theme.ChatsyTheme
 import com.example.presentation.designsystem.theme.LocalPadding
 import com.example.presentation.designsystem.theme.LocalSizes
+import com.example.ui.helpers.CollectEvent
 import org.bizilabs.halo.HaloTheme
 import org.bizilabs.halo.components.buttons.HaloFilledButton
+import org.bizilabs.halo.components.loaders.HaloCircularProgressIndicator
 import org.bizilabs.halo.components.textfields.HaloFilledTextField
 import org.koin.androidx.compose.koinViewModel
 
@@ -46,9 +53,19 @@ import org.koin.androidx.compose.koinViewModel
 fun SignupScreen(
     onNavigateBack: () -> Unit,
     onNavigateToLogin: () -> Unit,
+    onNavigateToChatList: () -> Unit,
     viewModel: SignupViewModel = koinViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+
+    CollectEvent(viewModel.event) { event ->
+        when (event) {
+            SignupEvent.OnNavigateToChatList -> onNavigateToChatList()
+            is SignupEvent.ShowToast -> Toast.makeText(context, event.message, Toast.LENGTH_LONG).show()
+        }
+    }
+
     SignupScreenContent(
         state = state,
         onAction = { action ->
@@ -116,27 +133,24 @@ private fun SignupScreenContent(
             onValueChange = { onAction(SignupAction.OnEnterUsername(it)) },
         )
         Spacer(modifier = Modifier.height(sizes.xl.dp))
-        HaloFilledTextField(
-            value = state.password,
-            placeholder = "Enter password...",
-            onValueChange = { onAction(SignupAction.OnEnterPassword(it)) },
-        )
-        Spacer(modifier = Modifier.height(sizes.xl.dp))
         Text(
             text =
                 buildAnnotatedString {
                     append("Already have an account?")
                     withLink(
-                        link = LinkAnnotation.Clickable(
-                            tag = "login",
-                            styles = TextLinkStyles(
-                                style = SpanStyle(
-                                    color = HaloTheme.colorScheme.primary.strong,
-                                    fontWeight = FontWeight.Bold,
-                                ),
+                        link =
+                            LinkAnnotation.Clickable(
+                                tag = "login",
+                                styles =
+                                    TextLinkStyles(
+                                        style =
+                                            SpanStyle(
+                                                color = HaloTheme.colorScheme.primary.strong,
+                                                fontWeight = FontWeight.Bold,
+                                            ),
+                                    ),
+                                linkInteractionListener = { onAction(SignupAction.OnClickLogin) },
                             ),
-                            linkInteractionListener = { onAction(SignupAction.OnClickLogin) }
-                        )
                     ) {
                         append(" Login")
                     }
@@ -152,6 +166,13 @@ private fun SignupScreenContent(
             modifier = Modifier.fillMaxWidth(),
             onClick = { onAction(SignupAction.OnClickSubmit) },
         ) {
+            AnimatedVisibility(state.isLoading) {
+                HaloCircularProgressIndicator(
+                    modifier = Modifier.size(sizes.lg.dp),
+                    color = HaloTheme.colorScheme.content.weaker
+                )
+                Spacer(modifier = Modifier.width(sizes.sm.dp))
+            }
             Text(
                 text = "Submit",
                 style =
@@ -170,7 +191,10 @@ private fun SignupScreenContent(
 private fun SignupScreenPreview() {
     ChatsyTheme {
         SignupScreenContent(
-            state = SignupState(),
+            state =
+                SignupState(
+                    isLoading = true,
+                ),
             onAction = { action -> },
         )
     }

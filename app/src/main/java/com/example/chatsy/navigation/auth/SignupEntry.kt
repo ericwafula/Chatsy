@@ -19,5 +19,8 @@ fun signupScreen(
             onNavigateToLogin = {
                 backStack.navigateForward(Route.LoginScreen)
             },
+            onNavigateToChatList = {
+                backStack.navigateForward(Route.ChatListScreen)
+            },
         )
     }

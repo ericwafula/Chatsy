@@ -2,7 +2,7 @@ package com.example.datasource.local.preferences
 
 import com.example.domain.helpers.DataError
 import com.example.domain.helpers.LocalResult
-import com.example.domain.repository.AuthLocalDatasource
+import com.example.domain.sources.AuthLocalDatasource
 import kotlinx.coroutines.flow.Flow
 
 class DefaultAuthLocalDatasource(

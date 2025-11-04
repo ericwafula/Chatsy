@@ -22,14 +22,16 @@ fun <T, E : DataError> LocalResult<T, E>.asEmptyDataResult(): EmptyResult<E> = m
 
 typealias EmptyResult<E> = LocalResult<Unit, E>
 
-inline fun <T, E : LocalError> LocalResult<T, E>.onSuccess(block: (T) -> Unit) {
+inline fun <T, E : LocalError> LocalResult<T, E>.onSuccess(block: (T) -> Unit): LocalResult<T, E> {
     if (this is LocalResult.Success) {
         block(data)
     }
+    return this
 }
 
-inline fun <T, E : DataError> LocalResult<T, E>.onError(block: (DataError) -> Unit) {
+inline fun <T, E : DataError> LocalResult<T, E>.onError(block: (DataError) -> Unit): LocalResult<T, E> {
     if (this is LocalResult.Error) {
         block(error)
     }
+    return this
 }

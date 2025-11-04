@@ -6,7 +6,7 @@ import com.example.domain.helpers.DataError
 import com.example.domain.helpers.LocalResult
 import com.example.domain.helpers.map
 import com.example.domain.model.AuthResponse
-import com.example.domain.repository.AuthRemoteDataSource
+import com.example.domain.sources.AuthRemoteDataSource
 
 class DefaultAuthRemoteDataSource(
     private val apiHelper: ApiHelper,
