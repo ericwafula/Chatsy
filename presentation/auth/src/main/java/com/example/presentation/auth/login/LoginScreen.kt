@@ -21,19 +21,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.LinkAnnotation
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.TextLinkStyles
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.withLink
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.presentation.auth.R
-import com.example.presentation.auth.signup.SignupAction
 import com.example.presentation.designsystem.images.ChatsyIcons
 import com.example.presentation.designsystem.theme.ChatsyTheme
 import com.example.presentation.designsystem.theme.LocalPadding
@@ -44,7 +37,6 @@ import org.bizilabs.halo.components.HaloText
 import org.bizilabs.halo.components.buttons.HaloFilledButton
 import org.bizilabs.halo.components.buttons.HaloTextButton
 import org.bizilabs.halo.components.loaders.HaloCircularProgressIndicator
-import org.bizilabs.halo.components.textfields.HaloCodeFilledField
 import org.bizilabs.halo.components.textfields.HaloFilledTextField
 import org.koin.androidx.compose.koinViewModel
 import timber.log.Timber
@@ -68,6 +60,7 @@ fun LoginScreen(
 
     LoginScreenContent(
         state = state,
+        navigateToChats = navigateToChats,
         onAction = { action ->
             when (action) {
                 LoginAction.OnClickSignup -> onClickSignup()
@@ -81,7 +74,10 @@ fun LoginScreen(
 private fun LoginScreenContent(
     state: LoginState,
     onAction: (LoginAction) -> Unit,
+    navigateToChats: () -> Unit,
 ) {
+    if (state.navigateToChats) navigateToChats()
+
     val localPadding = LocalPadding.current
     val sizes = LocalSizes.current
     Column(
@@ -94,8 +90,7 @@ private fun LoginScreenContent(
                     bottom = localPadding.navigationBarAndInsets,
                     start = sizes.lg.dp,
                     end = sizes.lg.dp,
-                )
-                .verticalScroll(rememberScrollState()),
+                ).verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Spacer(modifier = Modifier.weight(1f))
@@ -146,11 +141,12 @@ private fun LoginScreenContent(
             onClick = { onAction(LoginAction.OnClickSubmit) },
         ) {
             AnimatedContent(targetState = state.isLoading) { loading ->
-                when(loading){
+                when (loading) {
                     true -> {
                         HaloCircularProgressIndicator(modifier = Modifier.size(24.dp))
                     }
-                    false ->  {
+
+                    false -> {
                         Text(
                             text = "Submit",
                             style =
@@ -162,7 +158,6 @@ private fun LoginScreenContent(
                     }
                 }
             }
-
         }
         Spacer(modifier = Modifier.height(sizes.xl.dp))
     }
@@ -174,6 +169,7 @@ private fun LoginScreenPreview() {
     ChatsyTheme {
         LoginScreenContent(
             state = LoginState(),
+            navigateToChats = {},
             onAction = { action -> },
         )
     }

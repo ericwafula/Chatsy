@@ -27,7 +27,7 @@ suspend inline fun <reified Response : Any> HttpClient.get(
             url(constructRoute(route))
             header(
                 "Authorization",
-                "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxMywiaXNzIjoiY2hhdHNlcnZlciIsImV4cCI6MTc2MjI5NjgxOCwibmJmIjoxNzYyMjkzMjE4LCJpYXQiOjE3NjIyOTMyMTh9.HKFlieePXEX8_i6jSoWqMyR9mIRBYQEIeScoqxZnrLg",
+                "Bearer ${AuthenticationProvider.token}",
             )
             queryParameters.forEach { (key, value) ->
                 parameter(key, value)

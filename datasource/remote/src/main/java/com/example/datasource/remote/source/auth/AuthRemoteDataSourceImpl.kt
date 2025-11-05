@@ -1,6 +1,7 @@
 package com.example.datasource.remote.source.auth
 
 import com.example.datasource.remote.helpers.ApiHelper
+import com.example.datasource.remote.helpers.AuthenticationProvider
 import com.example.datasource.remote.mappers.toDomain
 import com.example.domain.helpers.DataError
 import com.example.domain.helpers.LocalResult
@@ -14,11 +15,19 @@ class AuthRemoteDataSourceImpl(
     override suspend fun login(
         email: String,
         password: String,
-    ): LocalResult<AuthResponse, DataError.Network> = apiHelper.login(email, password).map { it.toDomain() }
+    ): LocalResult<AuthResponse, DataError.Network> =
+        apiHelper.login(email, password).map {
+            AuthenticationProvider.setToken(it.token)
+            it.toDomain()
+        }
 
     override suspend fun signup(
         username: String,
         email: String,
         password: String,
-    ): LocalResult<AuthResponse, DataError.Network> = apiHelper.signup(username, email, password).map { it.toDomain() }
+    ): LocalResult<AuthResponse, DataError.Network> =
+        apiHelper.signup(username, email, password).map {
+            AuthenticationProvider.setToken(it.token)
+            it.toDomain()
+        }
 }

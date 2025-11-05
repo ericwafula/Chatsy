@@ -16,6 +16,7 @@ data class LoginState(
     val showDialog: Boolean = false,
     val username: String = "",
     val password: String = "#Password-123",
+    val navigateToChats: Boolean = false
 ) {
     val isValidUsername: Boolean
         get() = username.isNotEmpty() && username.length >= 3
@@ -73,8 +74,7 @@ class LoginViewModel(
             authRemoteDataSource
                 .login(email, password)
                 .onSuccess {
-                    updateState { it.copy(isLoading = false) }
-                    Timber.d("Kawabanga -> OnSuccess")
+                    updateState { it.copy(isLoading = false, navigateToChats = true) }
                     updateEvent(LoginEvent.NavigateToChats)
                 }.onError { value ->
                     updateState { it.copy(isLoading = false, errorMessage = value.asUiText()) }
