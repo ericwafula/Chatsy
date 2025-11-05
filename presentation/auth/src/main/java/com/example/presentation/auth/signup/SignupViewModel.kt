@@ -75,8 +75,6 @@ sealed interface SignupEvent {
 class SignupViewModel(
     private val signupUseCase: SignupUseCase,
 ) : ViewModel() {
-    private val _event = Channel<SignupEvent>()
-    val event = _event.receiveAsFlow()
     private val _state = mutableStateOf(SignupState())
     val state: State<SignupState> = _state
 
@@ -102,9 +100,7 @@ class SignupViewModel(
                 password = state.value.password,
             ).onSuccess {
                 _state.value = state.value.copy(isLoading = false)
-                _event.send(SignupEvent.OnNavigateToChatList)
             }.onError { error ->
-                _event.send(SignupEvent.ShowToast(error.asUiText()))
                 _state.value = state.value.copy(isLoading = false)
             }
         }

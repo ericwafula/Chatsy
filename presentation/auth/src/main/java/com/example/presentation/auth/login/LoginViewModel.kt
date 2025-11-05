@@ -7,6 +7,7 @@ import com.example.domain.sources.auth.AuthRemoteDataSource
 import com.example.ui.helpers.StatefulViewModel
 import com.example.ui.helpers.asUiText
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 data class LoginState(
     val isLoading: Boolean = false,
@@ -73,6 +74,7 @@ class LoginViewModel(
                 .login(email, password)
                 .onSuccess {
                     updateState { it.copy(isLoading = false) }
+                    Timber.d("Kawabanga -> OnSuccess")
                     updateEvent(LoginEvent.NavigateToChats)
                 }.onError { value ->
                     updateState { it.copy(isLoading = false, errorMessage = value.asUiText()) }

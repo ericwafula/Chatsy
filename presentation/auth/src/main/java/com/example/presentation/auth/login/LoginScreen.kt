@@ -47,6 +47,7 @@ import org.bizilabs.halo.components.loaders.HaloCircularProgressIndicator
 import org.bizilabs.halo.components.textfields.HaloCodeFilledField
 import org.bizilabs.halo.components.textfields.HaloFilledTextField
 import org.koin.androidx.compose.koinViewModel
+import timber.log.Timber
 
 @Composable
 fun LoginScreen(
@@ -59,7 +60,7 @@ fun LoginScreen(
     CollectEvent(viewModel.event) { event ->
         when (event) {
             is LoginEvent.NavigateToChats -> {
-                println("Kawabanga ->>>>")
+                Timber.d("Kawabanga ->>>>")
                 navigateToChats()
             }
         }
