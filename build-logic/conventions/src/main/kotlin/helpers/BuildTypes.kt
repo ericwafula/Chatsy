@@ -15,23 +15,24 @@ fun Project.configureBuildTypes(
     commonExtension.run {
         buildFeatures { buildConfig = true }
         val baseUrl = gradleLocalProperties(rootDir, rootProject.providers).getProperty("BASE_URL")
+        val wsConnectionUrl = gradleLocalProperties(rootDir, rootProject.providers).getProperty("WS_CONNECTION_URL")
         when (extensionType) {
             ExtensionType.Application -> {
                 extensions.configure<ApplicationExtension> {
                     buildTypes {
                         release {
-                            configureReleaseBuildType(this@configure, baseUrl = baseUrl)
+                            configureReleaseBuildType(this@configure, baseUrl = baseUrl, wsConnectionUrl = wsConnectionUrl)
                             isShrinkResources = true
                         }
-                        debug { configureDebugBuildType(baseUrl = baseUrl) }
+                        debug { configureDebugBuildType(baseUrl = baseUrl, wsConnectionUrl = wsConnectionUrl) }
                     }
                 }
             }
             ExtensionType.Library ->
                 extensions.configure<LibraryExtension> {
                     buildTypes {
-                        release { configureReleaseBuildType(this@configure, baseUrl = baseUrl) }
-                        debug { configureDebugBuildType(baseUrl = baseUrl) }
+                        release { configureReleaseBuildType(this@configure, baseUrl = baseUrl, wsConnectionUrl = wsConnectionUrl) }
+                        debug { configureDebugBuildType(baseUrl = baseUrl, wsConnectionUrl = wsConnectionUrl) }
                     }
                 }
         }
@@ -41,11 +42,18 @@ fun Project.configureBuildTypes(
 private fun BuildType.configureReleaseBuildType(
     commonExtension: CommonExtension<*, *, *, *, *, *>,
     baseUrl: String,
+    wsConnectionUrl: String,
 ) {
     buildConfigField(
         type = "String",
         name = "BASE_URL",
         value = "\"$baseUrl\"",
+    )
+
+    buildConfigField(
+        type = "String",
+        name = "WS_CONNECTION_URL",
+        value = "\"$wsConnectionUrl\"",
     )
 
     isMinifyEnabled = true
@@ -56,10 +64,19 @@ private fun BuildType.configureReleaseBuildType(
     )
 }
 
-private fun BuildType.configureDebugBuildType(baseUrl: String) {
+private fun BuildType.configureDebugBuildType(
+    baseUrl: String,
+    wsConnectionUrl: String,
+) {
     buildConfigField(
         type = "String",
         name = "BASE_URL",
         value = "\"$baseUrl\"",
+    )
+
+    buildConfigField(
+        type = "String",
+        name = "WS_CONNECTION_URL",
+        value = "\"$wsConnectionUrl\"",
     )
 }

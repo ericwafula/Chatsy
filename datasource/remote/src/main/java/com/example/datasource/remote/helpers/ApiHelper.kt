@@ -1,16 +1,16 @@
 package com.example.datasource.remote.helpers
 
+import com.example.datasource.remote.BuildConfig
 import com.example.datasource.remote.dtos.AuthResponseDto
 import com.example.datasource.remote.dtos.LoginRequestDto
 import com.example.datasource.remote.dtos.MessageDataDto
+import com.example.datasource.remote.dtos.P2pMessageDto
 import com.example.datasource.remote.dtos.SignupRequestDto
-import com.example.datasource.remote.dtos.UserDTO
 import com.example.datasource.remote.dtos.UserWithChatInfoDto
 import com.example.domain.helpers.DataError
 import com.example.domain.helpers.LocalResult
-import com.example.domain.model.MessageData
 import io.ktor.client.HttpClient
-import io.ktor.client.request.get
+import kotlinx.coroutines.flow.Flow
 
 interface ApiHelper {
     suspend fun login(
@@ -28,17 +28,18 @@ interface ApiHelper {
 
     suspend fun getUsersWithChatInfo(): LocalResult<List<UserWithChatInfoDto>, DataError.Network>
 
-    suspend fun getUsers(): LocalResult<List<UserDTO>, DataError>
+    suspend fun listenToSocket(token: String): Flow<P2pMessageDto>
 }
 
 class KtorApiHelper(
-    private val client: HttpClient,
+    private val httpClient: HttpClient,
+    private val webSocketClientHelper: WebSocketClientHelper,
 ) : ApiHelper {
     override suspend fun login(
         email: String,
         password: String,
     ): LocalResult<AuthResponseDto, DataError.Network> =
-        client.post<LoginRequestDto, AuthResponseDto>(
+        httpClient.post<LoginRequestDto, AuthResponseDto>(
             route = ApiEndpoints.Auth.LOGIN,
             body = LoginRequestDto(email = email, password = password),
         )
@@ -48,7 +49,7 @@ class KtorApiHelper(
         email: String,
         password: String,
     ): LocalResult<AuthResponseDto, DataError.Network> =
-        client.post<SignupRequestDto, AuthResponseDto>(
+        httpClient.post<SignupRequestDto, AuthResponseDto>(
             route = ApiEndpoints.Auth.SIGNUP,
             body =
                 SignupRequestDto(
@@ -59,10 +60,11 @@ class KtorApiHelper(
         )
 
     override suspend fun getMessagesHistory(recipientId: Long): LocalResult<MessageDataDto, DataError.Network> =
-        client.get<MessageDataDto>(route = ApiEndpoints.Chat.MESSAGES_HISTORY + "/$recipientId")
+        httpClient.get<MessageDataDto>(route = ApiEndpoints.Chat.MESSAGES_HISTORY + "/$recipientId")
 
     override suspend fun getUsersWithChatInfo(): LocalResult<List<UserWithChatInfoDto>, DataError.Network> =
-        client.get<List<UserWithChatInfoDto>>(route = ApiEndpoints.Chat.USERS_WITH_CHAT_INFO)
+        httpClient.get<List<UserWithChatInfoDto>>(route = ApiEndpoints.Chat.USERS_WITH_CHAT_INFO)
 
-    override suspend fun getUsers(): LocalResult<List<UserDTO>, DataError> = client.get<List<UserDTO>>(route = ApiEndpoints.Users.All)
+    override suspend fun listenToSocket(token: String): Flow<P2pMessageDto> =
+        webSocketClientHelper.listenToSocket(BuildConfig.WS_CONNECTION_URL + "?token=$token")
 }

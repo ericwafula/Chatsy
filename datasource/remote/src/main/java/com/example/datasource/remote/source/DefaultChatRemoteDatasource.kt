@@ -6,11 +6,16 @@ import com.example.domain.helpers.DataError
 import com.example.domain.helpers.LocalResult
 import com.example.domain.helpers.map
 import com.example.domain.model.MessageData
+import com.example.domain.model.P2pMessage
 import com.example.domain.sources.ChatRemoteDatasource
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 class DefaultChatRemoteDatasource(
     private val apiHelper: ApiHelper,
 ) : ChatRemoteDatasource {
     override suspend fun getMessages(recipientId: Long): LocalResult<MessageData, DataError.Network> =
         apiHelper.getMessagesHistory(recipientId).map { it.toDomain() }
+
+    override suspend fun listenToSocket(token: String): Flow<P2pMessage> = apiHelper.listenToSocket(token).map { it.toDomain() }
 }
