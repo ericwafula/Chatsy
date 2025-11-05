@@ -6,6 +6,10 @@ object ApiEndpoints {
         const val SIGNUP = "users/register"
     }
 
+    object Chats {
+        val All = "chats"
+    }
+
     object Chat {
         const val USERS_WITH_CHAT_INFO = "users/with-chat-info"
         const val MESSAGES_HISTORY = "messages/history"

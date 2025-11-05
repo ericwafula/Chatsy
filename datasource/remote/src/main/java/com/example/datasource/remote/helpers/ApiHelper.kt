@@ -68,7 +68,7 @@ class KtorApiHelper(
         httpClient.get<MessageDataDto>(route = ApiEndpoints.Chat.MESSAGES_HISTORY + "/$recipientId")
 
     override suspend fun getUsersWithChatInfo(): LocalResult<List<UserWithChatInfoDto>, DataError.Network> =
-        httpClient.get<List<UserWithChatInfoDto>>(route = ApiEndpoints.Chat.USERS_WITH_CHAT_INFO)
+        httpClient.get<List<UserWithChatInfoDto>>(route = ApiEndpoints.Chats.All)
 
     override suspend fun getUsers(): LocalResult<List<UserDTO>, DataError> = httpClient.get<List<UserDTO>>(route = ApiEndpoints.Users.All)
 
