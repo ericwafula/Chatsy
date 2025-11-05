@@ -52,18 +52,8 @@ fun SignupScreen(
     onNavigateToChatList: () -> Unit,
     viewModel: SignupViewModel = koinViewModel(),
 ) {
-    val state by viewModel.state.collectAsStateWithLifecycle()
+    val state by viewModel.state
     val context = LocalContext.current
-
-    CollectEvent(viewModel.event) { event ->
-        when (event) {
-            SignupEvent.OnNavigateToChatList -> onNavigateToChatList()
-            is SignupEvent.ShowToast ->
-                Toast
-                    .makeText(context, event.message, Toast.LENGTH_LONG)
-                    .show()
-        }
-    }
 
     SignupScreenContent(
         state = state,
@@ -145,7 +135,7 @@ private fun SignupScreenContent(
             onClick = { onAction(SignupAction.OnClickSubmit) },
         ) {
             AnimatedContent(targetState = state.isLoading) { loading ->
-                when(loading){
+                when (loading) {
                     true -> {
                         HaloCircularProgressIndicator(
                             modifier = Modifier.size(sizes.lg.dp),
