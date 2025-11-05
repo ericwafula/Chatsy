@@ -6,6 +6,7 @@ import com.example.datasource.remote.dtos.LoginRequestDto
 import com.example.datasource.remote.dtos.MessageDataDto
 import com.example.datasource.remote.dtos.P2pMessageDto
 import com.example.datasource.remote.dtos.SignupRequestDto
+import com.example.datasource.remote.dtos.UserDTO
 import com.example.datasource.remote.dtos.UserWithChatInfoDto
 import com.example.domain.helpers.DataError
 import com.example.domain.helpers.LocalResult
@@ -28,7 +29,11 @@ interface ApiHelper {
 
     suspend fun getUsersWithChatInfo(): LocalResult<List<UserWithChatInfoDto>, DataError.Network>
 
+    suspend fun getUsers(): LocalResult<List<UserDTO>, DataError>
+
     suspend fun listenToSocket(token: String): Flow<P2pMessageDto>
+
+    suspend fun sendMessage(message: String)
 }
 
 class KtorApiHelper(
@@ -65,6 +70,12 @@ class KtorApiHelper(
     override suspend fun getUsersWithChatInfo(): LocalResult<List<UserWithChatInfoDto>, DataError.Network> =
         httpClient.get<List<UserWithChatInfoDto>>(route = ApiEndpoints.Chat.USERS_WITH_CHAT_INFO)
 
+    override suspend fun getUsers(): LocalResult<List<UserDTO>, DataError> = httpClient.get<List<UserDTO>>(route = ApiEndpoints.Users.All)
+
     override suspend fun listenToSocket(token: String): Flow<P2pMessageDto> =
         webSocketClientHelper.listenToSocket(BuildConfig.WS_CONNECTION_URL + "?token=$token")
+
+    override suspend fun sendMessage(message: String) {
+        webSocketClientHelper.sendMessage(message)
+    }
 }

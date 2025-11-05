@@ -1,4 +1,4 @@
-package com.example.domain.sources
+package com.example.domain.sources.auth
 
 import com.example.domain.helpers.DataError
 import com.example.domain.helpers.LocalResult

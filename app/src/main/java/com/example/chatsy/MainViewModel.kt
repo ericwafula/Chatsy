@@ -1,7 +1,7 @@
 package com.example.chatsy
 
 import androidx.lifecycle.viewModelScope
-import com.example.domain.sources.AuthLocalDatasource
+import com.example.domain.sources.auth.AuthLocalDatasource
 import com.example.ui.helpers.StateViewModel
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch

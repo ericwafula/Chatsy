@@ -3,7 +3,7 @@ package com.example.presentation.auth.login
 import androidx.lifecycle.viewModelScope
 import com.example.domain.helpers.onError
 import com.example.domain.helpers.onSuccess
-import com.example.domain.sources.AuthRemoteDataSource
+import com.example.domain.sources.auth.AuthRemoteDataSource
 import com.example.ui.helpers.StatefulViewModel
 import com.example.ui.helpers.asUiText
 import kotlinx.coroutines.launch

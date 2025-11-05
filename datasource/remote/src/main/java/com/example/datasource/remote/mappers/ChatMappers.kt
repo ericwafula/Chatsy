@@ -7,7 +7,9 @@ import com.example.domain.helpers.asInstant
 import com.example.domain.helpers.asLocalDateTime
 import com.example.domain.model.ChatMessage
 import com.example.domain.model.MessageData
+import com.example.domain.model.MessageStatus
 import com.example.domain.model.P2pMessage
+import java.time.LocalDateTime
 
 fun MessageDataDto.toDomain(): MessageData =
     MessageData(
@@ -27,10 +29,14 @@ fun ChatMessageDto.toDomain(): ChatMessage =
         status = status,
     )
 
-fun P2pMessageDto.toDomain(): P2pMessage =
-    P2pMessage(
-        type = type,
+fun P2pMessageDto.toDomain(): ChatMessage =
+    ChatMessage(
+        id = 0,
         senderId = senderId,
         recipientId = recipientId,
-        content = content,
+        type = type,
+        content = "",
+        mediaUrl = "",
+        timestamp = LocalDateTime.now(),
+        status = MessageStatus.DELIVERED,
     )

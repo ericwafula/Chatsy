@@ -5,11 +5,14 @@ import androidx.lifecycle.viewModelScope
 import com.example.domain.helpers.onError
 import com.example.domain.helpers.onSuccess
 import com.example.domain.model.ChatMessage
-import com.example.domain.usecase.GetChatsUseCase
+import com.example.domain.sources.auth.AuthLocalDatasource
+import com.example.domain.sources.chat.ChatRemoteSource
 import com.example.ui.helpers.asUiText
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
@@ -43,7 +46,8 @@ sealed interface SingleChatEvent {
 class SingleChatViewModel(
     private val senderId: Long,
     private val recipientId: Long,
-    private val getChatsUseCase: GetChatsUseCase,
+    private val chatRemoteSource: ChatRemoteSource,
+    private val authLocalDatasource: AuthLocalDatasource,
 ) : ViewModel() {
     private val _event = Channel<SingleChatEvent>()
     val event = _event.receiveAsFlow()
@@ -54,6 +58,7 @@ class SingleChatViewModel(
             .onStart {
                 initState()
                 getChats()
+                observeChats()
             }.stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(5_000),
@@ -69,7 +74,9 @@ class SingleChatViewModel(
     }
 
     private fun onClickSend() {
-        // todo handle sending message
+        viewModelScope.launch {
+            chatRemoteSource.sendMessage(state.value.message)
+        }
     }
 
     private fun onEnterMessage(message: String) {
@@ -85,13 +92,27 @@ class SingleChatViewModel(
     private fun getChats() {
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
-            getChatsUseCase(recipientId)
+            chatRemoteSource
+                .getMessages(recipientId)
                 .onSuccess { result ->
                     _state.update { it.copy(isLoading = false, messages = result.messages) }
                 }.onError { error ->
                     _state.update { it.copy(isLoading = false) }
                     _event.send(SingleChatEvent.ShowMessage(error.asUiText()))
                 }
+        }
+    }
+
+    private fun observeChats() {
+        viewModelScope.launch {
+            val accessToken = authLocalDatasource.accessToken.firstOrNull() ?: ""
+            chatRemoteSource.observeMessageEvents(accessToken).collectLatest { message ->
+                _state.update {
+                    it.copy(
+                        messages = state.value.messages + message,
+                    )
+                }
+            }
         }
     }
 }

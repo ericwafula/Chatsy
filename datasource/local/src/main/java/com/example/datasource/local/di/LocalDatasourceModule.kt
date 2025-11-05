@@ -9,7 +9,7 @@ import com.example.datasource.local.preferences.DefaultAuthLocalDatasource
 import com.example.datasource.local.preferences.DefaultAuthSource
 import com.example.datasource.local.preferences.helpers.DatastorePreferenceHelper
 import com.example.datasource.local.preferences.helpers.DefaultDatastorePreferencesHelper
-import com.example.domain.sources.AuthLocalDatasource
+import com.example.domain.sources.auth.AuthLocalDatasource
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.bind
 import org.koin.dsl.module

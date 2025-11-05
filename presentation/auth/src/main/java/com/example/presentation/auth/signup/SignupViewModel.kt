@@ -4,7 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.domain.helpers.onError
 import com.example.domain.helpers.onSuccess
-import com.example.domain.usecase.SignupUseCase
+import com.example.domain.usecase.auth.SignupUseCase
+import com.example.domain.usecase.auth.SignupUseCaseImpl
 import com.example.ui.helpers.asUiText
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
