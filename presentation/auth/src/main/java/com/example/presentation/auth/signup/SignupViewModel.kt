@@ -1,5 +1,7 @@
 package com.example.presentation.auth.signup
 
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.domain.helpers.onError
@@ -75,8 +77,8 @@ class SignupViewModel(
 ) : ViewModel() {
     private val _event = Channel<SignupEvent>()
     val event = _event.receiveAsFlow()
-    private val _state = MutableStateFlow(SignupState())
-    val state = _state.asStateFlow()
+    private val _state = mutableStateOf(SignupState())
+    val state: State<SignupState> = _state
 
     fun onAction(action: SignupAction) {
         when (action) {
@@ -88,26 +90,22 @@ class SignupViewModel(
     }
 
     private fun onEnterUsername(username: String) {
-        _state.update { it.copy(username = username) }
+        _state.value = state.value.copy(username = username)
     }
 
     private fun onClickSubmit() {
         viewModelScope.launch {
-            if (state.value.canSubmit.not()) {
-                _event.send(SignupEvent.ShowToast("Invalid field password"))
-            }
-
-            _state.update { it.copy(isLoading = true) }
+            _state.value = state.value.copy(isLoading = true)
             signupUseCase(
                 username = state.value.username,
                 email = state.value.constructedEmail,
                 password = state.value.password,
             ).onSuccess {
-                _state.update { it.copy(isLoading = false) }
+                _state.value = state.value.copy(isLoading = false)
                 _event.send(SignupEvent.OnNavigateToChatList)
             }.onError { error ->
                 _event.send(SignupEvent.ShowToast(error.asUiText()))
-                _state.update { it.copy(isLoading = false) }
+                _state.value = state.value.copy(isLoading = false)
             }
         }
     }
