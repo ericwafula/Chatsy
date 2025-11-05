@@ -15,19 +15,15 @@ class AuthRemoteDataSourceImpl(
     override suspend fun login(
         email: String,
         password: String,
-    ): LocalResult<AuthResponse, DataError.Network> =
-        apiHelper.login(email, password).map {
-            AuthenticationProvider.setToken(it.token)
-            it.toDomain()
-        }
+    ): LocalResult<AuthResponse, DataError.Network> {
+        // TODO 1
+    }
 
     override suspend fun signup(
         username: String,
         email: String,
         password: String,
-    ): LocalResult<AuthResponse, DataError.Network> =
-        apiHelper.signup(username, email, password).map {
-            AuthenticationProvider.setToken(it.token)
-            it.toDomain()
-        }
+    ): LocalResult<AuthResponse, DataError.Network> {
+        // TODO 2
+    }
 }
